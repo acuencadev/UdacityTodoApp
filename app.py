@@ -1,4 +1,7 @@
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+import sys
+
+from flask import (abort, Flask, jsonify, redirect, render_template,
+                   request, url_for)
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -31,14 +34,27 @@ def index():
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
-    print(request.get_json())
+    error = False
+    body = {}
 
-    description = request.get_json()['description']
-    todo = Todo(description=description)
+    try:
+        description = request.get_json()['description']
+        todo = Todo(description=description)
 
-    db.session.add(todo)
-    db.session.commit()
+        body['description'] = todo.description
 
-    return jsonify({
-        'description': todo.description
-    })
+        db.session.add(todo)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        error = True
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return jsonify({
+            'description': body['description']
+        })

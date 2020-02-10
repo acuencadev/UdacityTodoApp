@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -27,3 +27,18 @@ def index():
     data = Todo.query.all()
 
     return render_template('index.html', data=data)
+
+
+@app.route('/todos/create', methods=['POST'])
+def create_todo():
+    print(request.get_json())
+
+    description = request.get_json()['description']
+    todo = Todo(description=description)
+
+    db.session.add(todo)
+    db.session.commit()
+
+    return jsonify({
+        'description': todo.description
+    })

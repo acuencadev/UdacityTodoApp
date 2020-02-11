@@ -31,7 +31,7 @@ class Todo(db.Model):
 
 @app.route('/')
 def index():
-    data = Todo.query.all()
+    data = Todo.query.order_by('id').all()
 
     return render_template('index.html', data=data)
 
@@ -62,3 +62,27 @@ def create_todo():
         return jsonify({
             'description': body['description']
         })
+
+
+@app.route('/todos/<todo_id>/set-completed', methods=['POST'])
+def set_completed_todo(todo_id):
+    error = False
+
+    try:
+        completed = request.get_json()['completed']
+
+        todo = Todo.query.get(todo_id)
+        todo.completed = completed
+
+        db.session.commit()
+    except:
+        db.session.rollback()
+
+        error = True
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return '', 200

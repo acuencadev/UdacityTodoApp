@@ -5,6 +5,27 @@
             .hidden {
                 display: none;
             }
+
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                width: 200px;
+            }
+
+            li {
+                clear: both;
+            }
+
+            li button {
+                -webkit-appearance: none;
+                border: none;
+                outline: none;
+                color: red;
+                float: right;
+                cursor: pointer;
+                font-size: 20px;
+            }
         </style>
     </head>
     <body>
@@ -17,7 +38,11 @@
         </div>
         <ul id="todos">
             {% for d in data %}
-            <li><input type="checkbox" data-id="{{ d.id }}" class="check-completed" {% if d.completed %} checked {% endif %}>{{ d.description }}</li>
+            <li>
+                <input type="checkbox" data-id="{{ d.id }}" class="check-completed" {% if d.completed %} checked {% endif %}>
+                {{ d.description }}
+                <button class="delete-button" data-id="{{ d.id }}">&cross;</button>
+            </li>
             {% endfor %}
         </ul>
         <script>
@@ -38,6 +63,26 @@
                         headers: {
                             'Content-Type': 'application/json'
                         }
+                    })
+                    .then(function (jsonResponse) {
+                        document.getElementById('error').className = 'hidden';
+                    })
+                    .catch(function () {
+                        document.getElementById('error').className = '';
+                    })
+                }
+            }
+
+            const buttons = document.querySelectorAll('.delete-button');
+
+            for (let i = 0; i < buttons.length; i++) {
+                const button = buttons[i];
+
+                button.onclick = function (e) {
+                    const todoId = e.target.dataset['id'];
+
+                    fetch('/todos/' + todoId + '/delete', {
+                        method: 'DELETE'
                     })
                     .then(function (jsonResponse) {
                         document.getElementById('error').className = 'hidden';

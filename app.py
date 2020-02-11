@@ -3,6 +3,7 @@ import sys
 from flask import (abort, Flask, jsonify, redirect, render_template,
                    request, url_for)
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 
 app = Flask(__name__)
@@ -10,6 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 class Todo(db.Model):
@@ -20,9 +22,6 @@ class Todo(db.Model):
 
     def __repr__(self):
         return f"<Todo {self.id} {self.description}>"
-
-
-db.create_all()
 
 
 @app.route('/')

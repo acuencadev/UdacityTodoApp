@@ -38,11 +38,10 @@ class TodoList(db.Model):
 
     todos = db.relationship('Todo', backref='list', lazy=True)
 
+
 @app.route('/')
 def index():
-    data = Todo.query.order_by('id').all()
-
-    return render_template('index.html', data=data)
+    return redirect(url_for('get_list_todos', list_id=1))
 
 
 @app.route('/todos/create', methods=['POST'])
@@ -111,3 +110,12 @@ def delete_todo(todo_id):
     return jsonify({
         'success': True
     })
+
+
+@app.route('/lists/<list_id>')
+def get_list_todos(list_id):
+    lists = TodoList.query.all()
+    active_list = TodoList.query.get(list_id)
+    todos = Todo.query.filter_by(list_id=list_id).order_by('id').all()
+
+    return render_template('index.html', todos=todos, lists=lists, active_list=active_list)

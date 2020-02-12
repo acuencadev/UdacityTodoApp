@@ -119,3 +119,31 @@ def get_list_todos(list_id):
     todos = Todo.query.filter_by(list_id=list_id).order_by('id').all()
 
     return render_template('index.html', todos=todos, lists=lists, active_list=active_list)
+
+
+@app.route('/lists/create', methods=['POST'])
+def create_list():
+    error = False
+    body = {}
+
+    try:
+        name = request.get_json()['name']
+        new_list = TodoList(name=name)
+        body['name'] = new_list.name
+
+        db.session.add(new_list)
+        db.session.commit()
+    except:
+        error = True
+        print(sys.exc_info())
+
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return jsonify({
+            'name': body['name']
+        })

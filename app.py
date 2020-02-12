@@ -51,7 +51,8 @@ def create_todo():
 
     try:
         description = request.get_json()['description']
-        todo = Todo(description=description)
+        list_id = request.get_json()['list_id']
+        todo = Todo(description=description, list_id=list_id)
 
         body['description'] = todo.description
 
@@ -147,3 +148,27 @@ def create_list():
         return jsonify({
             'name': body['name']
         })
+
+
+@app.route('/lists/<list_id>/set-completed', methods=['POST'])
+def set_completed_list(list_id):
+    error = False
+
+    try:
+        list = TodoList.query.get(list_id)
+
+        for todo in list.todos:
+            todo.completed = True
+
+        db.session.commit()
+    except:
+        db.session.rollback()
+
+        error = True
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return '', 200
